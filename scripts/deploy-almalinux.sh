@@ -76,9 +76,12 @@ firewall-cmd --reload
 
 echo "=========================================================="
 echo " Deployment Complete!"
-echo " Access your app at: http://${DOMAIN}"
-if [ "${DOMAIN}" != "_" ]; then
+echo " Access your app in your browser at: http://${DOMAIN}"
+if [[ "${DOMAIN}" != "_" && ! "${DOMAIN}" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     echo " To enable HTTPS (SSL), run:"
     echo " certbot --nginx -d ${DOMAIN}"
+else
+    echo " Note: Let's Encrypt SSL (certbot) requires a domain name."
+    echo " Your app is live over HTTP at http://${DOMAIN}"
 fi
 echo "=========================================================="
