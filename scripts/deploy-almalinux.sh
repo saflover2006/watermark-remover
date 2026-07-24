@@ -39,10 +39,16 @@ fi
 
 # 5. Configure Nginx
 echo "[5/6] Writing Nginx configuration..."
+
+# Comment out or disable any default_server in main nginx.conf if present
+sed -i 's/listen       80 default_server;/listen       80;/g' /etc/nginx/nginx.conf || true
+sed -i 's/listen       \[::\]:80 default_server;/listen       \[::\]:80;/g' /etc/nginx/nginx.conf || true
+
 cat << 'EOF' > /etc/nginx/conf.d/watermark-remover.conf
 server {
-    listen 80;
-    server_name DOMAIN_PLACEHOLDER;
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
 
     root /var/www/watermark-remover;
     index index.html;
@@ -60,8 +66,6 @@ server {
     gzip_types text/plain text/css application/json application/javascript image/svg+xml;
 }
 EOF
-
-sed -i "s/DOMAIN_PLACEHOLDER/${DOMAIN}/g" /etc/nginx/conf.d/watermark-remover.conf
 
 # Test and restart Nginx
 nginx -t
