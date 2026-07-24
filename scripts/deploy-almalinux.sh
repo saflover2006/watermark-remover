@@ -57,8 +57,12 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
-    location ~* \.(css|js|png|jpg|jpeg|svg|webp|json)$ {
-        expires 30d;
+    location ~* \.(css|js)$ {
+        add_header Cache-Control "no-cache, must-revalidate";
+    }
+
+    location ~* \.(png|jpg|jpeg|svg|webp|json)$ {
+        expires 7d;
         add_header Cache-Control "public, no-transform";
     }
 
