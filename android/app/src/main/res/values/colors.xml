@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#38BDF8</color>
+    <color name="colorPrimaryDark">#09111F</color>
+    <color name="colorAccent">#38BDF8</color>
+
+    <color name="native_background">#09111F</color>
+    <color name="native_surface">#10192B</color>
+    <color name="native_surface_alt">#132038</color>
+    <color name="native_surface_raised">#18263E</color>
+    <color name="native_border">#25354B</color>
+    <color name="native_stage">#050B14</color>
+    <color name="native_stage_border">#1E2A3E</color>
+
+    <color name="native_text_primary">#F8FAFC</color>
+    <color name="native_text_secondary">#CBD5E1</color>
+    <color name="native_text_muted">#94A3B8</color>
+
+    <color name="native_accent">#38BDF8</color>
+    <color name="native_accent_pressed">#0EA5E9</color>
+    <color name="native_accent_soft">#16354C</color>
+
+    <color name="native_success">#4ADE80</color>
+    <color name="native_success_soft">#153224</color>
+    <color name="native_error">#F87171</color>
+    <color name="native_error_soft">#381A1F</color>
+
+    <color name="native_warning">#FB7185</color>
+    <color name="native_warning_pressed">#F43F5E</color>
+    <color name="native_warning_soft">#3A1822</color>
+
+    <color name="native_disabled_surface">#162033</color>
+    <color name="native_disabled_border">#1E293B</color>
+    <color name="native_track">#233246</color>
+    <color name="native_hero_start">#162843</color>
+    <color name="native_hero_end">#0C1728</color>
+    <color name="native_overlay">#CC0B1220</color>
+</resources>

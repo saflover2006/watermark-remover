@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Watermark Remover Studio</string>
+    <string name="title_activity_main">Watermark Remover Studio</string>
+    <string name="title_activity_native_preview">Watermark Remover Studio</string>
+    <string name="native_preview_launcher_label">Watermark Remover Studio</string>
+    <string name="native_editor_subtitle">Photo watermark cleanup</string>
+    <string name="native_editor_initial_status">Open a photo to start.</string>
+    <string name="native_editor_empty_state">Open a photo to begin editing.</string>
+    <string name="native_editor_open_media">Open</string>
+    <string name="native_editor_change_media">Change</string>
+    <string name="native_editor_title_photo">Photo Cleanup</string>
+    <string name="native_editor_subtitle_photo_mode">Paint, compare, and clean the watermark.</string>
+    <string name="native_editor_show_preview">Preview</string>
+    <string name="native_editor_hide_preview">Preview</string>
+    <string name="native_editor_show_retouch">Retouch</string>
+    <string name="native_editor_hide_retouch">Retouch</string>
+    <string name="package_name">com.watermarkremover.studio</string>
+    <string name="custom_url_scheme">com.watermarkremover.studio</string>
+
+    <!-- Splash screen -->
+    <string name="splash_tagline">Remove watermarks from your photos — instantly.</string>
+    <string name="splash_privacy_badge">100% On-Device · No Internet Required</string>
+    <string name="splash_loading_hint">Loading…</string>
+
+    <!-- About Activity -->
+    <string name="about_title">About</string>
+    <string name="about_close_button">Close</string>
+    <string name="about_version_placeholder">Version 0.1.0</string>
+    <string name="about_version_label">Version %s</string>
+    <string name="about_privacy_badge">Privacy-First · No Uploads · No Account</string>
+    <string name="about_privacy_title">🔒 Privacy First</string>
+    <string name="about_privacy_body">Watermark Remover Studio processes everything locally on your device. No images are ever uploaded, no account is required, and no data is stored outside your phone. Your photos stay yours.</string>
+    <string name="about_features_title">✨ Features</string>
+    <string name="about_features_body">• Brush-based watermark masking\n• Paint and erase mode\n• Adjustable brush size and cleanup strength\n• Undo / redo edit history\n• Zoom, pan, and fit-to-view controls\n• Live before/after compare slider\n• One-tap healing fill\n• PNG export to device gallery</string>
+    <string name="about_tech_title">⚙ How It Works</string>
+    <string name="about_tech_body">Paint a mask over the watermark area, then tap Clean Up. The engine expands the mask slightly to catch edge pixels, then fills the selected region outside-in using nearby unmasked pixel colors. For small corner watermarks, this is typically instant.</string>
+
+    <!-- Editor action menu -->
+    <string name="menu_about">About App</string>
+    <string name="menu_new_session">New Session</string>
+    <string name="menu_clear_mask">Clear Mask</string>
+    <string name="menu_reset_image">Reset Image</string>
+    <string name="menu_save_png">Save PNG</string>
+
+    <!-- Session Dialogs -->
+    <string name="session_dialog_title">Resume Previous Session?</string>
+    <string name="session_dialog_message">You have an unfinished image editing session from earlier. Would you like to resume where you left off?</string>
+    <string name="session_dialog_resume">Resume Session</string>
+    <string name="session_dialog_discard">Start Fresh</string>
+    <string name="session_restored">Restored your last editing session.</string>
+    <string name="session_already_empty">No active session to clear.</string>
+    <string name="session_cleared">Session cleared. Open a new photo to begin.</string>
+    <string name="new_session_dialog_title">Start New Session?</string>
+    <string name="new_session_dialog_message">This will discard your current image, mask, and changes.</string>
+    <string name="new_session_dialog_confirm">Discard &amp; Start Fresh</string>
+</resources>
+
+

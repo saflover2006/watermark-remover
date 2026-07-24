@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Watermark Remover Studio</title>
+    <meta
+      name="description"
+      content="Upload an image, brush over the watermark, remove it locally in your browser, and download the cleaned result."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <!-- Ambient background orbs -->
+    <div class="bg-orbs" aria-hidden="true">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+
+    <div class="shell">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="app-brand">
+          <div class="brand-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14 2L16.5 9.5L24 7L19.5 13.5L26 17L18.5 17.5L20 25L14 20.5L8 25L9.5 17.5L2 17L8.5 13.5L4 7L11.5 9.5L14 2Z" fill="url(#star-grad)" />
+              <defs>
+                <linearGradient id="star-grad" x1="2" y1="2" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#a78bfa"/>
+                  <stop offset="1" stop-color="#38bdf8"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div>
+            <h1 class="brand-name">Watermark Remover</h1>
+            <p class="brand-tagline">Local-only · Privacy-first · Browser powered</p>
+          </div>
+        </div>
+
+        <div class="header-pill">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <circle cx="7" cy="7" r="3" fill="#4ade80"/>
+            <circle cx="7" cy="7" r="5.5" stroke="#4ade80" stroke-opacity="0.3" stroke-width="1"/>
+          </svg>
+          <span>Runs 100% in your browser</span>
+        </div>
+      </header>
+
+      <main class="layout">
+        <!-- Controls Sidebar -->
+        <aside class="panel controls" role="complementary" aria-label="Tool controls">
+
+          <!-- Upload -->
+          <section class="panel-section upload-section">
+            <label class="file-drop-zone" id="fileDropZone">
+              <div class="drop-icon" aria-hidden="true">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                  <path d="M16 4L20 10H26L21 14.5L23 21L16 17L9 21L11 14.5L6 10H12L16 4Z" fill="none" stroke="url(#up-grad)" stroke-width="1.5" stroke-linejoin="round"/>
+                  <path d="M16 21V28M12 25H20" stroke="url(#up-grad)" stroke-width="1.5" stroke-linecap="round"/>
+                  <defs>
+                    <linearGradient id="up-grad" x1="6" y1="4" x2="26" y2="28" gradientUnits="userSpaceOnUse">
+                      <stop stop-color="#a78bfa"/>
+                      <stop offset="1" stop-color="#38bdf8"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+              <span class="drop-title">Upload image</span>
+              <span class="drop-subtitle">PNG, JPG, WEBP</span>
+              <input id="fileInput" type="file" accept="image/*" />
+            </label>
+          </section>
+
+          <!-- Brush & Cleanup -->
+          <section class="panel-section">
+            <div class="section-header">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M10 2L14 6L5 15C4 16 2 16 1 15C0 14 0 12 1 11L10 2Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+                <path d="M8 4L12 8" stroke="currentColor" stroke-width="1.2"/>
+              </svg>
+              <p class="section-title">Brush</p>
+            </div>
+
+            <div class="field">
+              <div class="field-header">
+                <label for="brushSize">Brush size</label>
+                <output id="brushSizeValue" for="brushSize" class="value-badge">36 px</output>
+              </div>
+              <input id="brushSize" type="range" min="8" max="120" value="36" />
+            </div>
+
+            <div class="field">
+              <div class="field-header">
+                <label for="cleanupStrength">Edge cleanup</label>
+                <output id="cleanupStrengthValue" for="cleanupStrength" class="value-badge">2 px</output>
+              </div>
+              <input id="cleanupStrength" type="range" min="0" max="8" value="2" />
+            </div>
+          </section>
+
+          <!-- Mask Mode -->
+          <section class="panel-section">
+            <div class="section-header">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <circle cx="8" cy="8" r="5" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M8 3V8L11 11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+              <p class="section-title">Mask mode</p>
+            </div>
+            <div class="segmented" role="group" aria-label="Mask mode">
+              <button id="paintModeButton" class="segmented-button is-active" type="button" data-mode="paint">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M2 12L7 3L12 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M4 9H10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                </svg>
+                Paint
+              </button>
+              <button id="eraseModeButton" class="segmented-button" type="button" data-mode="erase">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M9 2L12 5L5 12H2V9L9 2Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+                  <path d="M7 4L10 7" stroke="currentColor" stroke-width="1.3"/>
+                </svg>
+                Erase
+              </button>
+            </div>
+          </section>
+
+          <!-- Actions -->
+          <section class="panel-section actions">
+            <div class="section-header">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M8 1L9.5 5.5L14 4L11 8L14 11L9 10.5L10 15L8 12L6 15L7 10.5L2 11L5 8L2 4L6.5 5.5L8 1Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+              </svg>
+              <p class="section-title">Actions</p>
+            </div>
+
+            <button id="removeButton" class="primary-button" type="button" disabled>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M8 1L9.5 5.5L14 4L11 8L14 11L9 10.5L10 15L8 12L6 15L7 10.5L2 11L5 8L2 4L6.5 5.5L8 1Z" fill="currentColor"/>
+              </svg>
+              Remove watermark
+            </button>
+
+            <button id="savePreparedExportButton" class="primary-button save-button" type="button" hidden disabled>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M8 3V10M5 7L8 10L11 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 13H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              Save cleaned export
+            </button>
+
+            <div class="button-row">
+              <button id="undoButton" class="secondary-button" type="button" disabled>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M2 5H8C10.5 5 12 6.5 12 9C12 11.5 10.5 13 8 13H4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                  <path d="M4 2L1 5L4 8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Undo
+              </button>
+              <button id="redoButton" class="secondary-button" type="button" disabled>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M12 5H6C3.5 5 2 6.5 2 9C2 11.5 3.5 13 6 13H10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                  <path d="M10 2L13 5L10 8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Redo
+              </button>
+            </div>
+
+            <div class="button-row">
+              <button id="clearMaskButton" class="secondary-button" type="button" disabled>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.3"/>
+                  <path d="M4.5 4.5L9.5 9.5M9.5 4.5L4.5 9.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                </svg>
+                Clear mask
+              </button>
+              <button id="resetButton" class="secondary-button" type="button" disabled>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M2 7C2 4.2 4.2 2 7 2C9 2 10.7 3 11.6 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                  <path d="M12 3V6H9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 7C12 9.8 9.8 12 7 12C5 12 3.3 11 2.4 9.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                </svg>
+                Reset
+              </button>
+            </div>
+
+            <button id="downloadButton" class="secondary-button download-button" type="button" disabled>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M7 2V9M4 6L7 9L10 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M1 12H13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              </svg>
+              Download PNG
+            </button>
+
+            <p class="hint shortcut-hint">
+              <kbd>Ctrl+Z</kbd> undo · <kbd>Ctrl+Shift+Z</kbd> redo
+            </p>
+          </section>
+
+          <!-- Preview -->
+          <section class="panel-section">
+            <div class="section-header">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M1 8C1 8 4 3 8 3C12 3 15 8 15 8C15 8 12 13 8 13C4 13 1 8 1 8Z" stroke="currentColor" stroke-width="1.2"/>
+                <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.2"/>
+              </svg>
+              <p class="section-title">Preview</p>
+            </div>
+            <div class="segmented segmented-3" role="group" aria-label="Preview mode">
+              <button id="previewEditedButton" class="segmented-button is-active" type="button" data-preview="edited">Edited</button>
+              <button id="previewOriginalButton" class="segmented-button" type="button" data-preview="original">Original</button>
+              <button id="previewCompareButton" class="segmented-button" type="button" data-preview="compare">Compare</button>
+            </div>
+          </section>
+
+          <!-- Zoom / View -->
+          <section class="panel-section">
+            <div class="section-header">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                <path d="M5 7H9M7 5V9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+              <p class="section-title">View</p>
+            </div>
+            <div class="zoom-controls">
+              <button id="zoomOutButton" class="icon-button" type="button" disabled aria-label="Zoom out">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.3"/>
+                  <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  <path d="M5 7H9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <span id="zoomBadge" class="zoom-badge">100%</span>
+              <button id="zoomInButton" class="icon-button" type="button" disabled aria-label="Zoom in">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.3"/>
+                  <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  <path d="M5 7H9M7 5V9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <button id="fitViewButton" class="secondary-button fit-button" type="button" disabled>Fit</button>
+            </div>
+            <p class="hint shortcut-hint">Scroll to zoom · <kbd>Space</kbd> + drag to pan</p>
+          </section>
+
+          <!-- How to use -->
+          <section class="panel-section steps-section">
+            <div class="section-header">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M8 7V11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                <circle cx="8" cy="5" r="0.75" fill="currentColor"/>
+              </svg>
+              <p class="section-title">How to use</p>
+            </div>
+            <ol class="steps">
+              <li><span class="step-num">1</span><span>Upload an image.</span></li>
+              <li><span class="step-num">2</span><span>Paint over the watermark area.</span></li>
+              <li><span class="step-num">3</span><span>Click <strong>Remove watermark</strong>.</span></li>
+              <li><span class="step-num">4</span><span>Repeat for stubborn marks.</span></li>
+            </ol>
+          </section>
+        </aside>
+
+        <!-- Workspace -->
+        <section class="panel workspace" aria-label="Image editing canvas">
+          <div class="workspace-header">
+            <div class="workspace-meta">
+              <p class="section-title canvas-label">Canvas</p>
+              <p id="statusText" class="status-text">Upload an image to start.</p>
+            </div>
+            <div class="badge-row">
+              <span id="imageMetaBadge" class="meta-chip">No image loaded</span>
+              <span id="maskMetaBadge" class="meta-chip">Mask: 0 px</span>
+            </div>
+          </div>
+
+          <div id="stageFrame" class="stage-frame is-empty">
+            <canvas id="imageCanvas" class="stage-canvas" aria-label="Edited image canvas"></canvas>
+            <canvas id="comparisonCanvas" class="stage-canvas comparison-canvas" hidden aria-label="Original image comparison canvas"></canvas>
+            <canvas id="overlayCanvas" class="stage-canvas overlay-canvas" aria-label="Mask overlay canvas"></canvas>
+            <div id="compareLine" class="compare-line" hidden aria-hidden="true"></div>
+            <div id="brushPreview" class="brush-preview" hidden aria-hidden="true"></div>
+
+            <div id="emptyState" class="empty-state">
+              <div class="empty-icon" aria-hidden="true">
+                <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+                  <rect x="4" y="12" width="48" height="36" rx="6" stroke="url(#es-grad)" stroke-width="2"/>
+                  <circle cx="18" cy="24" r="4" stroke="url(#es-grad)" stroke-width="1.5"/>
+                  <path d="M4 36L16 26L24 34L34 22L52 36" stroke="url(#es-grad)" stroke-width="1.5" stroke-linejoin="round"/>
+                  <path d="M28 2L30 8H36L31 12L33 18L28 14.5L23 18L25 12L20 8H26L28 2Z" fill="url(#es-grad)" opacity="0.7"/>
+                  <defs>
+                    <linearGradient id="es-grad" x1="4" y1="2" x2="52" y2="48" gradientUnits="userSpaceOnUse">
+                      <stop stop-color="#a78bfa"/>
+                      <stop offset="1" stop-color="#38bdf8"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+              <p class="empty-title">Drop a photo here</p>
+              <p class="empty-sub">Paint over watermarks, then heal with one click.<br>Your image never leaves this device.</p>
+            </div>
+
+            <div id="busyOverlay" class="busy-overlay" hidden>
+              <div class="spinner-ring" aria-hidden="true">
+                <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+                  <circle cx="26" cy="26" r="22" stroke="rgba(255,255,255,0.1)" stroke-width="4"/>
+                  <circle cx="26" cy="26" r="22" stroke="url(#spin-grad)" stroke-width="4" stroke-linecap="round" stroke-dasharray="80 60"/>
+                  <defs>
+                    <linearGradient id="spin-grad" x1="4" y1="4" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                      <stop stop-color="#a78bfa"/>
+                      <stop offset="1" stop-color="#38bdf8"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+              <p id="busyOverlayText" class="busy-text">Working…</p>
+            </div>
+          </div>
+
+          <div id="compareControls" class="compare-controls" hidden>
+            <div class="field-header compare-header">
+              <label for="compareSlider">Before / after split</label>
+              <output id="compareValue" for="compareSlider" class="value-badge">50%</output>
+            </div>
+            <input id="compareSlider" type="range" min="0" max="100" value="50" />
+            <div class="compare-scale">
+              <span>Original</span>
+              <span>Edited</span>
+            </div>
+          </div>
+
+          <div class="workspace-footer">
+            <div class="legend">
+              <span class="legend-swatch" aria-hidden="true"></span>
+              <span>Masked area</span>
+            </div>
+            <p class="hint">Use a slightly larger mask than the visible watermark for cleaner edges.</p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

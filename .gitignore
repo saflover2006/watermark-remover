@@ -1,0 +1,14 @@
+node_modules/
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.env
+coverage/
+www/
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+external-skills/
+opencode.json

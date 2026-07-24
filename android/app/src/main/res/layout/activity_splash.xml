@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/native_background">
+
+    <!-- Centered brand block -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingLeft="40dp"
+        android:paddingRight="40dp">
+
+        <!-- Gradient icon square with glow ring -->
+        <FrameLayout
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:background="@drawable/bg_splash_icon_ring">
+
+            <FrameLayout
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_splash_icon_gradient">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    android:src="@mipmap/ic_launcher_round"
+                    android:contentDescription="@string/app_name" />
+            </FrameLayout>
+        </FrameLayout>
+
+        <!-- App name -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:text="@string/app_name"
+            android:textColor="@color/native_text_primary"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:letterSpacing="-0.02"
+            android:gravity="center" />
+
+        <!-- Tagline -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/splash_tagline"
+            android:textColor="@color/native_text_muted"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:lineSpacingMultiplier="1.3" />
+
+        <!-- Privacy badge -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:background="@drawable/bg_native_status_accent"
+            android:paddingLeft="16dp"
+            android:paddingTop="10dp"
+            android:paddingRight="16dp"
+            android:paddingBottom="10dp"
+            android:text="@string/splash_privacy_badge"
+            android:textColor="@color/native_accent"
+            android:textSize="12sp"
+            android:fontFamily="sans-serif-medium" />
+    </LinearLayout>
+
+    <!-- Bottom hint -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:paddingBottom="40dp"
+        android:text="@string/splash_loading_hint"
+        android:textColor="@color/native_text_muted"
+        android:textSize="12sp"
+        android:gravity="center"
+        android:alpha="0.6" />
+
+</FrameLayout>
