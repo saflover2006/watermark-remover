@@ -780,17 +780,6 @@ function loadMediaFiles(files) {
     selectBatchItem(0);
   }
 }
-  if (!file) {
-    return;
-  }
-
-  if (file.type.startsWith("image/")) {
-    loadImageFile(file);
-    return;
-  }
-
-  setStatus("Please choose an image file.");
-}
 
 function selectBatchItem(index) {
   const item = batchQueue.items[index];
