@@ -22,6 +22,7 @@ import {
   redoHistory,
   undoHistory,
 } from "./history.js";
+import { BatchQueue, BatchStatus } from "./batch.js";
 
 const fileInput = document.querySelector("#fileInput");
 const brushSizeInput = document.querySelector("#brushSize");
@@ -59,9 +60,23 @@ const busyOverlay = document.querySelector("#busyOverlay");
 const busyOverlayText = document.querySelector("#busyOverlayText");
 const compareControls = document.querySelector("#compareControls");
 
+// Batch UI
+const batchDrawer = document.querySelector("#batchDrawer");
+const batchCountBadge = document.querySelector("#batchCountBadge");
+const batchProcessButton = document.querySelector("#batchProcessButton");
+const batchDownloadButton = document.querySelector("#batchDownloadButton");
+const batchCarousel = document.querySelector("#batchCarousel");
+const applyGlobalMaskCheckbox = document.querySelector("#applyGlobalMaskCheckbox");
+const batchProgressContainer = document.querySelector("#batchProgressContainer");
+const batchProgressBar = document.querySelector("#batchProgressBar");
+const batchProgressText = document.querySelector("#batchProgressText");
+
 const imageContext = imageCanvas.getContext("2d", { willReadFrequently: true });
 const comparisonContext = comparisonCanvas.getContext("2d", { willReadFrequently: true });
 const overlayContext = overlayCanvas.getContext("2d", { willReadFrequently: true });
+
+const batchQueue = new BatchQueue();
+
 
 const state = {
   mediaType: null,
@@ -747,7 +762,24 @@ async function loadImageFile(file) {
   }
 }
 
-function loadMediaFile(file) {
+function loadMediaFiles(files) {
+  if (!files || files.length === 0) {
+    return;
+  }
+
+  const addedItems = batchQueue.addFiles(files);
+  if (addedItems.length === 0) {
+    setStatus("Please choose an image file.");
+    return;
+  }
+
+  batchDrawer.hidden = false;
+  renderBatchCarousel();
+
+  if (batchQueue.items.length > 0 && batchQueue.activeIndex === -1) {
+    selectBatchItem(0);
+  }
+}
   if (!file) {
     return;
   }
@@ -759,6 +791,208 @@ function loadMediaFile(file) {
 
   setStatus("Please choose an image file.");
 }
+
+function selectBatchItem(index) {
+  const item = batchQueue.items[index];
+  if (!item) return;
+
+  // Save current state to previous active item if needed
+  if (batchQueue.activeIndex !== -1) {
+    const prevItem = batchQueue.items[batchQueue.activeIndex];
+    if (prevItem && state.workingImageData) {
+      prevItem.originalImageData = cloneImageDataLike(state.originalImageData);
+      prevItem.mask = state.mask ? Uint8Array.from(state.mask) : null;
+      prevItem.maskedPixels = state.maskedPixels;
+    }
+  }
+
+  batchQueue.activeIndex = index;
+  renderBatchCarousel();
+  loadImageFile(item.file).then(() => {
+    // If the item had a saved mask, restore it
+    if (item.mask && state.workingImageData) {
+      state.mask = Uint8Array.from(item.mask);
+      state.maskedPixels = item.maskedPixels;
+      renderOverlay();
+      refreshMeta();
+    }
+  });
+}
+
+function renderBatchCarousel() {
+  batchCountBadge.textContent = `${batchQueue.items.length} items`;
+  batchCarousel.innerHTML = "";
+  
+  let hasProcessed = false;
+
+  batchQueue.items.forEach((item, index) => {
+    if (item.status === BatchStatus.DONE) hasProcessed = true;
+    
+    const el = document.createElement("div");
+    el.className = `batch-item ${index === batchQueue.activeIndex ? "is-active" : ""}`;
+    el.title = item.name;
+    
+    const img = document.createElement("img");
+    img.src = item.resultBlob ? URL.createObjectURL(item.resultBlob) : item.thumbnailUrl;
+    img.className = "batch-item-img";
+    el.appendChild(img);
+
+    const statusEl = document.createElement("div");
+    statusEl.className = `batch-item-status is-${item.status}`;
+    if (item.status === BatchStatus.DONE) {
+      statusEl.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+    } else if (item.status === BatchStatus.ERROR) {
+      statusEl.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+    } else if (item.status === BatchStatus.PROCESSING) {
+      statusEl.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>`;
+    } else {
+      statusEl.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>`;
+    }
+    el.appendChild(statusEl);
+
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "batch-item-remove";
+    removeBtn.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+    removeBtn.onclick = (e) => {
+      e.stopPropagation();
+      batchQueue.removeItem(index);
+      renderBatchCarousel();
+      if (batchQueue.items.length === 0) {
+        batchDrawer.hidden = true;
+      } else if (index === batchQueue.activeIndex || batchQueue.activeIndex === -1) {
+        selectBatchItem(Math.max(0, index - 1));
+      }
+    };
+    el.appendChild(removeBtn);
+
+    el.onclick = () => selectBatchItem(index);
+    batchCarousel.appendChild(el);
+  });
+  
+  batchDownloadButton.disabled = !hasProcessed;
+  batchProcessButton.disabled = batchQueue.items.length === 0;
+}
+
+async function processBatch() {
+  if (batchQueue.items.length === 0) return;
+  
+  // Save current item state
+  if (batchQueue.activeIndex !== -1) {
+    const prevItem = batchQueue.items[batchQueue.activeIndex];
+    if (prevItem && state.workingImageData) {
+      prevItem.originalImageData = cloneImageDataLike(state.originalImageData);
+      prevItem.mask = state.mask ? Uint8Array.from(state.mask) : null;
+      prevItem.maskedPixels = state.maskedPixels;
+    }
+  }
+
+  setBusy(true);
+  batchProgressContainer.hidden = false;
+  batchProcessButton.disabled = true;
+  batchDownloadButton.disabled = true;
+  
+  const applyGlobalMask = applyGlobalMaskCheckbox.checked;
+  let globalMask = null;
+  let globalWidth = 0;
+  let globalHeight = 0;
+  
+  if (applyGlobalMask && batchQueue.activeIndex !== -1) {
+    const activeItem = batchQueue.items[batchQueue.activeIndex];
+    if (activeItem && activeItem.mask) {
+      globalMask = activeItem.mask;
+      globalWidth = state.imageWidth;
+      globalHeight = state.imageHeight;
+    }
+  }
+
+  let processedCount = 0;
+  
+  for (let i = 0; i < batchQueue.items.length; i++) {
+    const item = batchQueue.items[i];
+    item.status = BatchStatus.PROCESSING;
+    renderBatchCarousel();
+    
+    batchProgressBar.style.width = `${(i / batchQueue.items.length) * 100}%`;
+    batchProgressText.textContent = `Processing ${i + 1} of ${batchQueue.items.length}`;
+    
+    try {
+      const image = await loadImageElement(item.file);
+      const offscreenCanvas = document.createElement("canvas");
+      offscreenCanvas.width = image.naturalWidth;
+      offscreenCanvas.height = image.naturalHeight;
+      const offscreenContext = offscreenCanvas.getContext("2d", { willReadFrequently: true });
+      offscreenContext.drawImage(image, 0, 0);
+      const imageData = offscreenContext.getImageData(0, 0, image.naturalWidth, image.naturalHeight);
+      
+      let maskToUse = item.mask;
+      let maskPixels = item.maskedPixels;
+      
+      if (applyGlobalMask && globalMask) {
+        const scaled = batchQueue.scaleMask(globalMask, globalWidth, globalHeight, image.naturalWidth, image.naturalHeight);
+        maskToUse = scaled.mask;
+        maskPixels = scaled.maskedPixels;
+      }
+      
+      if (maskToUse && maskPixels > 0) {
+        await new Promise((resolve) => requestAnimationFrame(() => resolve()));
+        const healed = inpaintMaskedImage(imageData, maskToUse, image.naturalWidth, image.naturalHeight, {
+          dilationRadius: Number(cleanupStrengthInput.value),
+          sampleRadius: 5,
+          maxRadius: 28,
+        });
+        
+        const exportCanvas = document.createElement("canvas");
+        exportCanvas.width = image.naturalWidth;
+        exportCanvas.height = image.naturalHeight;
+        const exportContext = exportCanvas.getContext("2d");
+        exportContext.putImageData(createImageDataLike(new Uint8ClampedArray(healed.data), image.naturalWidth, image.naturalHeight), 0, 0);
+        
+        item.resultBlob = await new Promise(resolve => exportCanvas.toBlob(resolve, "image/png"));
+      } else {
+        item.resultBlob = item.file; // Fallback to original if no mask
+      }
+      
+      item.status = BatchStatus.DONE;
+      processedCount++;
+    } catch (e) {
+      console.error(e);
+      item.status = BatchStatus.ERROR;
+    }
+  }
+  
+  batchProgressBar.style.width = `100%`;
+  batchProgressText.textContent = `Completed ${processedCount} of ${batchQueue.items.length}`;
+  renderBatchCarousel();
+  
+  setTimeout(() => {
+    batchProgressContainer.hidden = true;
+    setBusy(false);
+    batchProcessButton.disabled = false;
+    // Reload active item to show changes if it was processed
+    if (batchQueue.activeIndex !== -1) selectBatchItem(batchQueue.activeIndex);
+  }, 1000);
+}
+
+async function downloadBatchZip() {
+  setBusy(true);
+  setStatus("Generating ZIP file...");
+  
+  try {
+    const zipBlob = await batchQueue.createZipBlob();
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(zipBlob);
+    link.download = `watermark-remover-batch-${Date.now()}.zip`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+  } catch (error) {
+    console.error(error);
+    alert(error.message);
+  } finally {
+    setBusy(false);
+    setStatus("ZIP download complete.");
+  }
+}
+
 
 function clearMask() {
   if (!state.mask) {
@@ -920,8 +1154,7 @@ function handleGlobalKeyup(event) {
 }
 
 function handleFileInputChange(event) {
-  const [file] = event.target.files;
-  loadMediaFile(file);
+  loadMediaFiles(event.target.files);
   event.target.value = "";
 }
 
@@ -937,9 +1170,11 @@ function handlePointerLeave(event) {
 function handleDrop(event) {
   event.preventDefault();
   stageFrame.classList.remove("is-dragging");
-  const mediaFile = [...event.dataTransfer.files].find((file) => file.type.startsWith("image/"));
-  loadMediaFile(mediaFile);
+  loadMediaFiles(event.dataTransfer.files);
 }
+
+batchProcessButton.addEventListener("click", processBatch);
+batchDownloadButton.addEventListener("click", downloadBatchZip);
 
 fileInput.addEventListener("change", handleFileInputChange);
 brushSizeInput.addEventListener("input", syncSliderLabels);

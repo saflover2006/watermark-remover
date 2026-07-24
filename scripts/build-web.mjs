@@ -40,6 +40,9 @@ async function buildWebBundle() {
   }
 
   await writeBuildMetadata();
+
+  // Copy JSZip for offline usage
+  await cp(join(projectRoot, "node_modules", "jszip", "dist", "jszip.min.js"), join(outputDirectory, "jszip.min.js"));
 }
 
 await buildWebBundle();
